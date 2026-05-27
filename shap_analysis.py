@@ -88,14 +88,54 @@ class SHAPAnalyzer:
             background_data: Sample of training data for reference
             model_type (str): Type of explainer - "tree", "kernel", or "linear"
         """
+        # Extract the actual model if it's a Pipeline
+        model_to_explain = self._extract_estimator()
+        
         if model_type == "tree":
-            self.explainer = shap.TreeExplainer(self.model)
+            self.explainer = shap.TreeExplainer(model_to_explain)
         elif model_type == "kernel":
-            self.explainer = shap.KernelExplainer(self.model.predict, background_data)
+            self.explainer = shap.KernelExplainer(model_to_explain.predict, background_data)
         else:
-            self.explainer = shap.LinearExplainer(self.model, background_data)
+            self.explainer = shap.LinearExplainer(model_to_explain, background_data)
         
         print(f"✓ {model_type.upper()} SHAP Explainer created successfully")
+    
+    
+    def _extract_estimator(self):
+        """
+        Extract the underlying estimator from a Pipeline if needed.
+        TreeExplainer doesn't support Pipeline objects (sklearn or imblearn),
+        so we need the actual tree-based model.
+        
+        Supports:
+        - sklearn.pipeline.Pipeline
+        - imblearn.pipeline.Pipeline
+        
+        Returns:
+            The model or the final estimator from a Pipeline
+        """
+        try:
+            # Try sklearn Pipeline first
+            from sklearn.pipeline import Pipeline as SklearnPipeline
+            if isinstance(self.model, SklearnPipeline):
+                estimator = self.model.named_steps[self.model.steps[-1][0]]
+                print(f"✓ Extracted estimator from sklearn Pipeline: {type(estimator).__name__}")
+                return estimator
+        except ImportError:
+            pass
+        
+        try:
+            # Try imblearn Pipeline
+            from imblearn.pipeline import Pipeline as ImbPipeline
+            if isinstance(self.model, ImbPipeline):
+                estimator = self.model.named_steps[self.model.steps[-1][0]]
+                print(f"✓ Extracted estimator from imblearn Pipeline: {type(estimator).__name__}")
+                return estimator
+        except ImportError:
+            pass
+        
+        # If not a pipeline, return the model as-is
+        return self.model
     
     
     def compute_shap_values(self, X_test):
@@ -103,13 +143,69 @@ class SHAPAnalyzer:
         Compute SHAP values for test data
         
         Args:
-            X_test: Test feature data
+            X_test: Test feature data (will be transformed through pipeline if needed)
         """
         if self.explainer is None:
             raise ValueError("Explainer not initialized. Call create_explainer first.")
         
-        self.shap_values = self.explainer.shap_values(X_test)
-        print(f"✓ SHAP values computed for {len(X_test)} samples")
+        # If model is a Pipeline, we need to preprocess the data
+        X_to_explain = self._transform_data(X_test)
+        
+        self.shap_values = self.explainer.shap_values(X_to_explain)
+        print(f"✓ SHAP values computed for {len(X_to_explain)} samples")
+    
+    
+    def _transform_data(self, X):
+        """
+        Transform data through pipeline preprocessing steps if needed.
+        
+        Handles both sklearn and imblearn pipelines by extracting
+        all preprocessing steps and applying them before SHAP analysis.
+        
+        Args:
+            X: Raw feature data
+            
+        Returns:
+            Preprocessed data
+        """
+        is_pipeline = False
+        pipeline_type = None
+        
+        try:
+            from sklearn.pipeline import Pipeline as SklearnPipeline
+            if isinstance(self.model, SklearnPipeline):
+                is_pipeline = True
+                pipeline_type = "sklearn"
+        except ImportError:
+            pass
+        
+        if not is_pipeline:
+            try:
+                from imblearn.pipeline import Pipeline as ImbPipeline
+                if isinstance(self.model, ImbPipeline):
+                    is_pipeline = True
+                    pipeline_type = "imblearn"
+            except ImportError:
+                pass
+        
+        if is_pipeline:
+            # Get all steps except the final estimator
+            n_steps = len(self.model.steps)
+            if n_steps > 1:
+                # Create a pipeline with all preprocessing steps
+                preprocessing_steps = self.model.steps[:-1]
+                
+                if pipeline_type == "imblearn":
+                    from imblearn.pipeline import Pipeline
+                else:
+                    from sklearn.pipeline import Pipeline
+                
+                preprocessor = Pipeline(preprocessing_steps)
+                X_transformed = preprocessor.transform(X)
+                print(f"✓ Data transformed through {len(preprocessing_steps)} {pipeline_type} preprocessing step(s)")
+                return X_transformed
+        
+        return X
     
     
     def global_feature_importance(self, figsize=(12, 6), show_plot=True):

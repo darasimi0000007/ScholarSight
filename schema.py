@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, AfterValidator, model_validator
+from typing import Optional, List, Union, Annotated, Any
 from enum import Enum
 
 
@@ -113,9 +113,21 @@ class Romantic(str, Enum):
 
 
 
+class ListWrapperModel(BaseModel):
+    @model_validator(mode='before')
+    @classmethod
+    def wrap_all_fields_in_lists(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            for key, value in data.items():
+                # Wrap in list if it's not a list, None, or a dict
+                if value is not None and not isinstance(value, (list, dict)):
+                    data[key] = [value]
+        return data
 
 
-class StudentDetails(BaseModel):
+
+
+class StudentDetails(ListWrapperModel):
     student_id: int = Field(..., description = "Student's Identification Number")
     sex: SexType = Field(..., description = "Sex of the student; M or F")
     age: int = Field(..., description = "Student's age")
@@ -147,10 +159,29 @@ class StudentDetails(BaseModel):
 
 
 
-class pullingStudentPrediction(StudentDetails):
+class SHAPAnalysisData(StudentDetails):
     
-    sex: str
-    age: int
+    sex: list[SexType] 
+    age: list[int] 
+    address: list[addressType] 
+    famsize: list[famSize] 
+    Pstatus: list[pStatus] 
+    guardian: list[Guardian] 
+    traveltime: list[travel_time] 
+    studytime: list[study_time] 
+    failures: list[Failures] 
+    schoolsup: list[Schoolsup] 
+    famsup: list[Famsup]  
+    activities: list[Activities] 
+    nursery: list[Nursery] 
+    famrel: list[FamilyRelationship] 
+    health: list[HealthStatus] 
+    absences: list[int] 
+    freetime: list[FreeTime] 
+    goout: list[GoOut] 
+    internet: list[Internet] 
+    romantic: list[Romantic] 
+    Prediction: list[str]
 
     class Config():
         from_attributes = True

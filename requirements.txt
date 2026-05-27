@@ -9,3 +9,4 @@ ipykernel
 imbalanced-learn
 sqlalchemy
 shap
+streamlit

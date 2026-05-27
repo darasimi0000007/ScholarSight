@@ -47,7 +47,7 @@ GradientBoostingClassifier
 Support Vector Machine
 
 
-Used VotingClassifier from sklearn to merge the models 
+Went ahead to make use of Gradientoosting as the model for prediction. Tree model with the best ROC_AUC score out of the three
 
 
 
