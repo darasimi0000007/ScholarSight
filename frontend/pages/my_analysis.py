@@ -54,38 +54,38 @@ else:
             <div style="color:#64748B;font-size:0.8rem;">Your SHAP analysis will appear here once your prediction is generated.</div>
         </div>""", unsafe_allow_html=True)
 
-        # ── Recommendations ───────────────────────────────────────────────────────────
-        st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
-        st.markdown("""
-        <div class="ss-card">
-        <h4 style="margin-top:0;">💡 What This Means For You</h4>
-        <p style="color:#94A3B8;font-size:0.85rem;line-height:1.7;">
-            By understanding which factors influenced your prediction, you can:
-            <ul style="color:#94A3B8;font-size:0.85rem;line-height:1.7;">
-                <li>Identify your strengths and areas of excellence</li>
-                <li>Recognize areas where you could improve</li>
-                <li>Make informed decisions about your study habits and routines</li>
-                <li>Work with your instructor on a personalized improvement plan</li>
-            </ul>
-        </p>
-        <p style="color:#64748B;font-size:0.8rem;margin-top:1rem;">
-            Remember: <strong>This prediction is a tool for support, not destiny.</strong>
-            Your dedication and effort can always lead to improvement and success.
-        </p>
-        </div>
-        """, unsafe_allow_html=True)
+# ── Recommendations ───────────────────────────────────────────────────────────
+st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
+st.markdown("""
+<div class="ss-card">
+<h4 style="margin-top:0;">💡 What This Means For You</h4>
+<p style="color:#94A3B8;font-size:0.85rem;line-height:1.7;">
+    By understanding which factors influenced your prediction, you can:
+    <ul style="color:#94A3B8;font-size:0.85rem;line-height:1.7;">
+        <li>Identify your strengths and areas of excellence</li>
+        <li>Recognize areas where you could improve</li>
+        <li>Make informed decisions about your study habits and routines</li>
+        <li>Work with your instructor on a personalized improvement plan</li>
+    </ul>
+</p>
+<p style="color:#64748B;font-size:0.8rem;margin-top:1rem;">
+    Remember: <strong>This prediction is a tool for support, not destiny.</strong>
+    Your dedication and effort can always lead to improvement and success.
+</p>
+</div>
+""", unsafe_allow_html=True)
 
-        # ── SHAP Education ───────────────────────────────────────────────────────────
-        st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
-        st.markdown("""
-        <div class="ss-card" style="background:#1e3a5f22;border-color:#2563eb44;">
-        <h4 style="margin-top:0;color:#93c5fd;">📚 About SHAP Explanations</h4>
-        <p style="color:#94A3B8;font-size:0.85rem;line-height:1.7;">
-            <strong style="color:#CBD5E1;">SHAP (SHapley Additive exPlanations)</strong> is a game-theoretic approach
-            from cooperative game theory that explains the output of any machine learning model.
-            It connects game theory and local explanations, ensuring that each feature gets an attribution
-            value for a particular prediction. This makes your model predictions fully transparent
-            and auditable.
-        </p>
-        </div>
-        """, unsafe_allow_html=True)
+# ── SHAP Education ───────────────────────────────────────────────────────────
+st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
+st.markdown("""
+<div class="ss-card" style="background:#1e3a5f22;border-color:#2563eb44;">
+<h4 style="margin-top:0;color:#93c5fd;">📚 About SHAP Explanations</h4>
+<p style="color:#94A3B8;font-size:0.85rem;line-height:1.7;">
+    <strong style="color:#CBD5E1;">SHAP (SHapley Additive exPlanations)</strong> is a game-theoretic approach
+    from cooperative game theory that explains the output of any machine learning model.
+    It connects game theory and local explanations, ensuring that each feature gets an attribution
+    value for a particular prediction. This makes your model predictions fully transparent
+    and auditable.
+</p>
+</div>
+""", unsafe_allow_html=True)

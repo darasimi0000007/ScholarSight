@@ -24,7 +24,7 @@ with col_form:
     # Row 1 – Identity
     c1, c2, c3, c4= st.columns(4)
     with c1:
-        student_id = st.text_input("Student ID *", placeholder="e.g. 1011", help="Unique student identifier")
+        student_id = st.text_input("Student ID *", placeholder="e.g. STU001", help="Unique student identifier")
     with c2:
         sex = st.selectbox("Gender", ["M", "F"], help="Student's gender")
     with c3:

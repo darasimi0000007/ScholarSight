@@ -404,7 +404,7 @@ def api_get_student(student_id: str):
     """Get details of a specific student."""
     try:
         headers = _get_auth_headers()
-        r = requests.get(f"{API_BASE}/students/{student_id}", headers=headers, timeout=10)
+        r = requests.get(f"{API_BASE}/students/student/{student_id}", headers=headers, timeout=10)
         if r.status_code == 404:
             return None, "Student not found."
         r.raise_for_status()
