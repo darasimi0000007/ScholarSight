@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, status, Response, HTTPException, Header
+from fastapi import APIRouter, Depends, status, Response, HTTPException, Header, Request
 from sqlalchemy.orm import Session
 import models, schema, database, hashing, oauth2
 from database import get_db
 from typing import List
+from rate_limits import limiter
 
 router = APIRouter(
     prefix = "/user",
@@ -25,6 +26,7 @@ def verify_access_token(x_verify_token: str = Header(...)):
 
 
 @router.post("/verify-role")
+#@limiter.limit("5/minute")  # number of verification requests per minute
 async def verify_role(institution_id: str):
     # Logic: Validate the code against your business rules
     if institution_id.upper().startswith("STU"):
@@ -51,6 +53,7 @@ async def verify_role(institution_id: str):
 
 #creating user profile and storing it in database
 @router.post("/signup", status_code = status.HTTP_201_CREATED)
+#@limiter.limit("5/minute")  # number of signup requests per minute
 def create_User(request: schema.User, role: str = Depends(verify_access_token), db: Session = Depends(get_db)):
     if request.password == request.confirm_password:
         new_user = models.User(firstname = request.firstname.capitalize(), lastname = request.lastname.capitalize(), role = role,

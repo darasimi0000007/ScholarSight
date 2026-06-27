@@ -8,3 +8,9 @@ font = "sans serif"
 [server]
 headless = true
 port = 8501
+
+
+[server]
+enableStaticServing = true
+headless = true
+port = 8501

@@ -14,10 +14,12 @@ import io
 from fastapi.responses import StreamingResponse
 from matplotlib.figure import Figure
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
+from typing import cast, Any
+from rate_limits import limiter
 
 router = APIRouter(
     prefix = "/students",
-    tags=["Records' Retrieval"]
+    tags=["Records' Retrieval, Update and Analysis"]
 )
 
 
@@ -25,6 +27,7 @@ router = APIRouter(
 
 #this is for getting all students' prediction data
 @router.get("/get_all_records")
+
 async def get_students(db: Session = Depends(get_db), current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
     if current_user.role != "teacher":
         raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Only teachers can access students' records")
@@ -36,35 +39,9 @@ async def get_students(db: Session = Depends(get_db), current_user: schema.UserE
 
 #wrapper for get all students' prediction data endpoint to maintain consistent URL structure
 @router.get("")
-async def get_all_student_default(db: Session = Depends(get_db), 
+async def get_all_student_default(db: Session = Depends(get_db),
                                   current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
     return await get_students(db, current_user)
-
-
-
-# Get specific student by ID
-@router.get("/one_student/{student_id}")
-def get_student(student_id: str, response: Response, db: Session = Depends(get_db), current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
-    if current_user.role != "teacher":
-        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Only teachers can access students' records")
-    
-
-    blogs = db.query(models.Blog).filter(models.Blog.student_id == student_id.upper()).first()
-
-    if not blogs:
-        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"Student record with id {student_id} is not available")
-    
-    return blogs
-
-
-
-#wrapper for get student by id endpoint to maintain consistent URL structure
-@router.get("/student/{student_id}")
-async def get_one_student_default(student_id: str, response: Response, db: Session = Depends(get_db),
-                                  current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
-    return get_student(student_id, response, db, current_user)
-
-
 
 
 
@@ -72,6 +49,7 @@ async def get_one_student_default(student_id: str, response: Response, db: Sessi
 
 # Get SHAP analysis chart 
 @router.get("/student/{student_id}/shap") 
+#@limiter.limit("10/minute")  # limiting the number of SHAP analysis requests to 10 per minute
 async def get_shap_analysis(student_id: str, db: Session = Depends(get_db), clf = Depends(get_model), preproc = Depends(get_preprocessor),
                        current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
     blog = db.query(models.Blog).filter(models.Blog.student_id == student_id.upper()).first()
@@ -170,6 +148,84 @@ async def get_shap_analysis_default(student_id: str, db: Session = Depends(get_d
 
 
 
+# Get specific student by ID
+@router.get("/one_student/{student_id}")
+#@limiter.limit("10/minute")  # limiting the number of requests to 10 per minute
+async def get_student(student_id: str, response: Response, db: Session = Depends(get_db), current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
+    if current_user.role != "teacher":
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Only teachers can access students' records")
+    
+
+    blogs = db.query(models.Blog).filter(models.Blog.student_id == student_id.upper()).first()
+
+    if not blogs:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"Student record with id {student_id} is not available")
+    
+    return blogs
+
+
+
+#wrapper for get student by id endpoint to maintain consistent URL structure
+@router.get("/student/{student_id}")
+async def get_one_student_default(student_id: str, response: Response, db: Session = Depends(get_db),
+                                  current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
+    return await get_student(student_id, response, db, current_user)
+
+
+
+
+
+
+
+
+
+#update a student's record
+@router.patch("/student/{student_id}/update", status_code = status.HTTP_200_OK)
+#@limiter.limit("10/minute")  # limiting the number of update requests to 10 per minute
+async def update_student(student_id: str, data: schema.StudentUpdate, db: Session = Depends(get_db), clf= Depends(get_model), current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
+    if current_user.role != "teacher":
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Only teachers can update students' records")
+
+    blog = cast(models.Blog, db.query(models.Blog).filter(models.Blog.student_id == student_id.upper()).first())
+    if not blog:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"Student record with id {student_id} not available")
+
+    
+    # Exclude unset fields and update only the provided ones
+    update_dict = data.model_dump(exclude_unset=True)
+    
+    # Merge the update into the existing record
+    for key, value in update_dict.items():
+        setattr(blog, key, value)
+    
+
+    feature_fields = [
+            "sex", "age", "address", "famsize", "Pstatus", "guardian",
+            "traveltime", "studytime", "failures", "schoolsup", "famsup",
+            "activities", "nursery", "famrel", "health", "absences",
+            "freetime", "goout", "internet", "romantic"
+        ]
+    record_dict = {f: getattr(blog, f) for f in feature_fields}
+    df = pd.DataFrame([record_dict])
+    
+    try:
+        #remaking prediction based on updated student's records
+        prediction = clf.predict(df)
+
+        prediction_final = ["Pass" if (x == 1) else "Fail" for x in prediction]
+        blog.Prediction = cast(Any, prediction_final[0])  #this line surprisingly works. I don't know whether to deal with it or not
+
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f"Re-prediction failed: {str(e)}")
+    
+    db.commit()
+    db.refresh(blog)
+    
+
+    return {"response": f"Student's record with id number {student_id} has been updated"}
+
+
 
 
 
@@ -177,6 +233,7 @@ async def get_shap_analysis_default(student_id: str, db: Session = Depends(get_d
 
 # Delete student record
 @router.delete("/student/{student_id}", status_code=status.HTTP_200_OK)
+#@limiter.limit("10/minute")  # limiting the number of delete requests to 10 per minute
 async def delete_student(student_id: str, db: Session = Depends(get_db), current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
     if current_user.role != "teacher":
         raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Only teachers can access students' records")

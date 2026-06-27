@@ -449,6 +449,32 @@ def api_delete_student(student_id: str):
     except Exception as e:
         return False, str(e)
 
+def api_update_student(student_id: str, data: dict):
+    """Partially update a student record (PATCH). Backend re-runs prediction on save."""
+    try:
+        headers = _get_auth_headers()
+        r = requests.patch(
+            f"{API_BASE}/students/student/{student_id}/update",
+            json=data,
+            headers=headers,
+            timeout=30,
+        )
+        if r.status_code == 404:
+            return None, "Student not found."
+        r.raise_for_status()
+        return r.json(), None
+    except requests.exceptions.ConnectionError:
+        return None, "Cannot reach the backend server."
+    except requests.exceptions.HTTPError as e:
+        try:
+            detail = e.response.json().get("detail", "No detail") if e.response is not None else "No response"
+        except Exception:
+            detail = e.response.text if e.response else "No response"
+        code = e.response.status_code if e.response is not None else "?"
+        return None, f"Update failed ({code}): {detail}"
+    except Exception as e:
+        return None, str(e)
+
 def api_get_shap_chart(student_id: str):
     """Get SHAP analysis chart for a student (returns image bytes)."""
     try:
@@ -499,9 +525,12 @@ def render_sidebar():
 
         if role == "teacher":
             st.markdown('<div style="color:#64748B;font-size:0.72rem;letter-spacing:0.08em;padding:0.6rem 0.5rem 0.2rem;">TEACHER TOOLS</div>', unsafe_allow_html=True)
-            st.page_link("pages/predict.py",  label="🔮  Make Prediction")
-            st.page_link("pages/records.py",  label="🗂️  Student Records")
-            st.page_link("pages/analysis.py", label="🧠  SHAP Analysis")
+            st.page_link("pages/predict.py",        label="🔮  Make Prediction")
+            st.page_link("pages/records.py",        label="🗂️  Student Records")
+            st.page_link("pages/edit_student.py",   label="✏️  Edit Student")
+            st.page_link("pages/delete_student.py", label="🗑️  Delete Student")
+            st.page_link("pages/analysis.py",       label="🧠  SHAP Analysis")
+            st.page_link("pages/charts.py",         label="📈  Analytics")
 
         if role == "student":
             st.markdown('<div style="color:#64748B;font-size:0.72rem;letter-spacing:0.08em;padding:0.6rem 0.5rem 0.2rem;">STUDENT PORTAL</div>', unsafe_allow_html=True)

@@ -20,8 +20,6 @@ API_BASE = "http://127.0.0.1:8000"
 # ── Hero Section ──────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-[data-testid="collapsedControl"] { display: none !important; }
-section[data-testid="stSidebar"] { display: none !important; }
 
 .signup-hero {
     text-align: center;
@@ -215,7 +213,7 @@ with col_main:
         col_back_login, col_spacer = st.columns([1, 1])
         with col_back_login:
             if st.button("← Back to Login", key="back_to_login_from_verify", width="stretch"):
-                st.switch_page("app.py")
+                st.switch_page("pages/login.py")
 
     # ── STEP 2: Signup Form ───────────────────────────────────────────────────
     elif st.session_state.signup_step == "signup_form":

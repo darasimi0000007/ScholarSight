@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 from routers import token
 from fastapi.security import OAuth2PasswordRequestForm
+from rate_limits import limiter
 
 router =APIRouter(
     prefix = "/auth",
@@ -13,6 +14,7 @@ router =APIRouter(
 
 
 @router.post("/login")
+#@limiter.limit("5/minute")  # limiting the number of login attempts to 5 per minute
 async def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
 
 

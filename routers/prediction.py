@@ -6,6 +6,8 @@ from database import get_db
 from typing import List, Annotated
 import pandas as pd
 from services.model_loader import get_model, get_preprocessor
+from rate_limits import limiter
+import starlette
 
 router = APIRouter(
     prefix = "/predict",
@@ -61,6 +63,7 @@ router = APIRouter(
 
 #prediction using raw input and storing it into database
 @router.post("/raw", status_code = status.HTTP_202_ACCEPTED)
+#@limiter.limit("10/minute")  # limiting the number of predictions to 10 per minute
 async def predict(item: schema.StudentDetails, 
                           db: Session = Depends(get_db), 
                           clf = Depends(get_model), 

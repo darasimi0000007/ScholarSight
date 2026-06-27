@@ -32,8 +32,8 @@ if role == "teacher":
 # ── Stats row ────────────────────────────────────────────────────────────────
 if role == "teacher":
     total     = len(students)
-    pass_count = sum(1 for s in students if str(s.get("prediction", "")).lower() in ("pass", "1", "true"))
-    fail_count = sum(1 for s in students if str(s.get("prediction", "")).lower() in ("fail", "0", "false"))
+    pass_count = sum(1 for s in students if str(s.get("Prediction", "")).lower() in ("pass", "1", "true"))
+    fail_count = sum(1 for s in students if str(s.get("Prediction", "")).lower() in ("fail", "0", "false"))
     pass_rate  = round((pass_count / total * 100), 1) if total else 0
 
     c1, c2, c3, c4 = st.columns(4)
@@ -113,8 +113,14 @@ if role == "teacher":
             st.switch_page("pages/predict.py")
         if st.button("🗂️ View All Records", width="stretch"):
             st.switch_page("pages/records.py")
+        if st.button("✏️ Edit Student Record", width="stretch"):
+            st.switch_page("pages/edit_student.py")
+        if st.button("🗑️ Delete Student Record", width="stretch"):
+            st.switch_page("pages/delete_student.py")
         if st.button("🧠 Run SHAP Analysis", width="stretch"):
             st.switch_page("pages/analysis.py")
+        if st.button("📊 View Students' Analysis Data", width="stretch"):
+            st.switch_page("pages/charts.py")
 
         st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
 

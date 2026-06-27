@@ -24,6 +24,12 @@ from routers import prediction, user, authentication, records
 from contextlib import asynccontextmanager
 from services.model_loader import load_model, load_preprocessor
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from rate_limits import limiter
+from typing import cast, Any
+from config_file import origins
+
 
 
 #loading the model and preprocessor from model_loader.py
@@ -43,11 +49,21 @@ app = FastAPI(title="ScholarSight",
               version="1.0.0", lifespan = lifespan)
 
 
+# async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+#     return _rate_limit_exceeded_handler(request, exc)
+
+# app.state.limiter = limiter
+# app.add_exception_handler(RateLimitExceeded, cast(Any, rate_limit_handler))
+
+
+
+
+
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For debugging, use "*"
+    allow_origins=origins,  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -298,6 +314,10 @@ app.include_router(user.router)
 
 #router for authentication and login
 app.include_router(authentication.router)
+
+
+
+
 
 
 
