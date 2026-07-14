@@ -18,3 +18,4 @@ passlib[argon2]
 slowapi
 python-dotenv
 streamlit-cookies-controller
+psycopg2-binary
