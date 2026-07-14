@@ -71,7 +71,7 @@ if role == "teacher":
     col_left, col_right = st.columns([2, 1])
 
     with col_left:
-        st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
         st.markdown("#### 🗂️ Recent Student Records")
 
         if students:
@@ -102,7 +102,7 @@ if role == "teacher":
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_right:
-        st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
         st.markdown("#### ⚡ Quick Actions")
 
         st.markdown("""
@@ -216,18 +216,17 @@ else:  # student role
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown('<div class="ss-card">', unsafe_allow_html=True)
-        st.markdown("#### 🔮 Make a Prediction")
+        # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+        st.markdown("#### 📂 View My Records")
         st.markdown("""
-        Enter your personal and academic details to get a prediction about your performance 
-        for the current term/semester.
+        Check out predictions that have been made by your teacher regarding your semester performance and work on these metrics.
         """)
-        if st.button("Start Prediction", key="student_predict", width="stretch"):
-            st.switch_page("pages/predict.py")
+        if st.button("View Records", key="student_record", width="stretch"):
+            st.switch_page("pages/my_record.py")
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
-        st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
         st.markdown("#### 🔍 View My Analysis")
         st.markdown("""
         See the SHAP analysis for your predictions to understand which factors 

@@ -16,7 +16,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── Step 1: ID lookup ─────────────────────────────────────────────────────────
-st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+# st.markdown('<div class="ss-card">', unsafe_allow_html=True)
 st.markdown("#### 🔍 Look Up Student")
 
 # Pre-fill from session if coming from another page
@@ -89,7 +89,7 @@ st.markdown(f"""
 st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
 
 # ── Edit form ─────────────────────────────────────────────────────────────────
-st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+# st.markdown('<div class="ss-card">', unsafe_allow_html=True)
 st.markdown("#### 📝 Update Fields")
 st.markdown('<p style="color:#64748B;font-size:0.83rem;margin-bottom:1.2rem;">All fields are pre-filled with the current stored values. Change only what needs updating.</p>', unsafe_allow_html=True)
 

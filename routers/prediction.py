@@ -8,6 +8,9 @@ import pandas as pd
 from services.model_loader import get_model, get_preprocessor
 from rate_limits import limiter
 import starlette
+from errors import DuplicateRecordError, DataValidationError
+from sqlalchemy.exc import IntegrityError
+
 
 router = APIRouter(
     prefix = "/predict",
@@ -64,13 +67,14 @@ router = APIRouter(
 #prediction using raw input and storing it into database
 @router.post("/raw", status_code = status.HTTP_202_ACCEPTED)
 #@limiter.limit("10/minute")  # limiting the number of predictions to 10 per minute
-async def predict(item: schema.StudentDetails, 
+async def predict(request: Request, 
+                  item: schema.StudentDetails, 
                           db: Session = Depends(get_db), 
                           clf = Depends(get_model), 
                           current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
     
     if current_user.role == "student":
-        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Only teachers can access students' records")
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Only Teachers can access students' records")
     
 
     h = item.model_dump(exclude={"student_id"})
@@ -122,13 +126,18 @@ async def predict(item: schema.StudentDetails,
 
 
 
-    #dealing with incomplete filling of student details
+
+    except IntegrityError:
+        raise DuplicateRecordError()
+
+    #dealing with incomplete filling of student details or saving another record with an existing primary key
     except Exception as e:
         db.rollback()
-        raise HTTPException(
-            status_code = status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail = "Prediction failed. {str(e)}}"
-        )
+        raise DataValidationError()
+        # raise HTTPException(
+        #     status_code = status.HTTP_422_UNPROCESSABLE_ENTITY,
+        #     detail = "Prediction failed. {str(e)}}"
+        # )
         
 
 
@@ -143,3 +152,4 @@ async def predict(item: schema.StudentDetails,
 
 #     # Just call your existing predict() function
 #     return await predict(item, db, clf, current_user)
+

@@ -24,11 +24,17 @@ from routers import prediction, user, authentication, records
 from contextlib import asynccontextmanager
 from services.model_loader import load_model, load_preprocessor
 
+# import for rate limiting
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from rate_limits import limiter
+
+
 from typing import cast, Any
 from config_file import origins
+from errors import DuplicateRecordError, DataValidationError
+from fastapi.responses import JSONResponse
 
 
 
@@ -49,11 +55,12 @@ app = FastAPI(title="ScholarSight",
               version="1.0.0", lifespan = lifespan)
 
 
-# async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
-#     return _rate_limit_exceeded_handler(request, exc)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return _rate_limit_exceeded_handler(request, exc)
 
-# app.state.limiter = limiter
-# app.add_exception_handler(RateLimitExceeded, cast(Any, rate_limit_handler))
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, cast(Any, _rate_limit_exceeded_handler))
+app.add_middleware(SlowAPIMiddleware)
 
 
 
@@ -165,8 +172,21 @@ app.include_router(prediction.router)
 #         )
     
 
+#exception handler for the prediction router
+@app.exception_handler(DuplicateRecordError)
+async def handle_duplicate_record(request: Request, exc: DuplicateRecordError):
+    return JSONResponse(
+        status_code = status.HTTP_409_CONFLICT,
+        content = {"message": "This record for this student exists in the database. If you wish to overwrite, delete the record first"}
+    )
 
 
+@app.exception_handler(DataValidationError)
+async def handle_data_validation(request: Request, exc: DataValidationError):
+    return JSONResponse(
+        status_code = status.HTTP_422_UNPROCESSABLE_ENTITY, 
+        content = {"message": "Incomplete student data provided"}
+    )
 
 
 #records' access endpoint

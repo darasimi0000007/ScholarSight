@@ -33,7 +33,7 @@ else:
         </div>
         """, unsafe_allow_html=True)
     elif shap_chart:
-        st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
         st.markdown("#### 📊 Your Feature Importance Analysis")
         st.markdown("""
         <p style="color:#94A3B8;font-size:0.85rem;line-height:1.6;margin-bottom:1rem;">

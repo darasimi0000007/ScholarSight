@@ -14,7 +14,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── Input form ───────────────────────────────────────────────────────────────
-st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+# st.markdown('<div class="ss-card">', unsafe_allow_html=True)
 st.markdown("#### 🔍 Select Student for Analysis")
 
 # Check if we have a pre-selected student from predict page
@@ -40,7 +40,7 @@ if student_id and student_id.strip():
     # Display student info
     if not student_err and student_data:
         st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
-        st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
         st.markdown("#### 📋 Student Information")
 
         col_left, col_right = st.columns(2)
@@ -72,7 +72,7 @@ if student_id and student_id.strip():
     # Display SHAP chart
     if not shap_err and shap_chart:
         st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
-        st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
         st.markdown("#### 📊 SHAP Feature Importance")
         st.markdown("""
         <p style="color:#94A3B8;font-size:0.85rem;line-height:1.6;">

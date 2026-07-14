@@ -130,7 +130,7 @@ class Romantic(str, Enum):
 class StudentDetails(BaseModel):
     student_id: str = Field(..., description = "Student's Identification Number")
     sex: SexType = Field(..., description = "Sex of the student; M or F")
-    age: int = Field(..., description = "Student's age", min_length = 10, max_length = 30)
+    age: int = Field(..., description = "Student's age")
     address: addressType = Field(..., description = "Rural(R) or Urban(U)")
     famsize: famSize = Field(..., description = "Family size: Greater than 3(GT3) or Less than 3(LE3)")
     Pstatus: pStatus = Field(..., description = "Parent Status: Living Together(T) or Apart(A)")
@@ -259,6 +259,7 @@ class UserExtended(User):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    institution_id: str
 
 
 class TokenData(BaseModel):

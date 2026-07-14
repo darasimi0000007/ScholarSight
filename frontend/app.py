@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import inject_css, is_logged_in
+from utils import inject_css, is_logged_in, restore_session
 
 st.set_page_config(
     page_title="ScholarSight – Academic Intelligence",
@@ -11,6 +11,7 @@ st.set_page_config(
 inject_css()
 
 # Redirect if already logged in
+restore_session()
 if is_logged_in():
     st.switch_page("pages/dashboard.py")
 
@@ -350,6 +351,6 @@ with col_b2:
 # ── FOOTER ────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="landing-footer">
-    ScholarSight v1.0 &nbsp;&middot;&nbsp; Powered by Gradient Boosting + SHAP &nbsp;&middot;&nbsp; Built with FastAPI &amp; Streamlit
+    ScholarSight v1.0 &nbsp;&middot;&nbsp; Powered by Gradient Boosting + SHAP &nbsp;&middot;&nbsp;
 </div>
 """, unsafe_allow_html=True)

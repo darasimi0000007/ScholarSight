@@ -59,7 +59,7 @@ else:
         st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
 
         # ── Search & Filter ───────────────────────────────────────────────────
-        st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
         st.markdown("#### 🔍 Search & Filter")
 
         col_search, col_export = st.columns([2, 1])
@@ -88,7 +88,7 @@ else:
         st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
 
         # ── Records Table ─────────────────────────────────────────────────────
-        st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
         st.markdown(f"#### 📋 Records ({len(df_filtered)} of {len(df)})")
 
         # Display dataframe
@@ -117,7 +117,7 @@ else:
         # ── Admin-only actions ────────────────────────────────────────────────
         if get_role() == "admin":
             st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
-            st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+            # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
             st.markdown("#### ⚙️ Admin Actions")
 
             col_delete, col_space = st.columns([1, 3])

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Request
 import schema, database, models, hashing
 from database import get_db
 from sqlalchemy.orm import Session
@@ -14,12 +14,12 @@ router =APIRouter(
 
 
 @router.post("/login")
-#@limiter.limit("5/minute")  # limiting the number of login attempts to 5 per minute
-async def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@limiter.limit("5/minute")  # limiting the number of login attempts to 5 per minute
+async def login(request: Request, request_form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
 
 
     #iltering out the user based on the email he put in as the username
-    user_name_checking = db.query(models.User).filter(models.User.email == request.username).first()
+    user_name_checking = db.query(models.User).filter(models.User.email == request_form.username).first()
 
     #checking if the user exists in the models.User databsase table
     if not user_name_checking:
@@ -29,7 +29,7 @@ async def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = De
 
 
     #cross-checking password the user put in with the hashed password stored in the database
-    password_checking = hashing.Hash().verify(request.password, user_name_checking.password)
+    password_checking = hashing.Hash().verify(request_form.password, user_name_checking.password)
 
     #checking to see if the password of the user is correct by comparing password with saved hashed password in the database
     if not password_checking:
@@ -45,4 +45,10 @@ async def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = De
     
 
 
-    return schema.Token(access_token=access_token, token_type="bearer")
+    # ensuring institution_id is returned as a string
+    institution_id_value = str(user_name_checking.institution_id)
+
+    return schema.Token(access_token=access_token,
+                        token_type="bearer",
+                        institution_id=institution_id_value
+                        )

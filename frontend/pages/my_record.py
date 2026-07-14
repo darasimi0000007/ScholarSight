@@ -71,7 +71,7 @@ else:
         st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
 
         # ── Detailed Information ──────────────────────────────────────────────
-        st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
         st.markdown("#### 📊 Detailed Information")
 
         # Create a cleaner display of student data

@@ -73,7 +73,7 @@ else:
         row1_col1, row1_col2 = st.columns(2)
 
         with row1_col1:
-            st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+            # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
             st.markdown("#### ✅ Pass / Fail Distribution")
             fig = go.Figure(data=[go.Pie(
                 labels=["Pass", "Fail"],
@@ -88,7 +88,7 @@ else:
             st.markdown('</div>', unsafe_allow_html=True)
 
         with row1_col2:
-            st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+            # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
             st.markdown("#### 🚻 Gender Distribution")
             if "sex" in df.columns and df["sex"].notna().any():
                 gender_counts = df["sex"].value_counts()
@@ -109,7 +109,7 @@ else:
         row2_col1, row2_col2 = st.columns(2)
 
         with row2_col1:
-            st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+            # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
             st.markdown("#### 🎂 Age Distribution")
             age_counts = df["age_num"].dropna().astype(int).value_counts().sort_index()
             if not age_counts.empty:
@@ -125,7 +125,7 @@ else:
             st.markdown('</div>', unsafe_allow_html=True)
 
         with row2_col2:
-            st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+            # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
             st.markdown("#### 📅 Absences Distribution")
             if "absences" in df.columns:
                 absences_num = pd.to_numeric(df["absences"], errors="coerce").dropna()
@@ -147,7 +147,7 @@ else:
         row3_col1, row3_col2 = st.columns(2)
 
         with row3_col1:
-            st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+            # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
             st.markdown("#### ⚠️ Past Failures Breakdown")
             if "failures" in df.columns:
                 failures_counts = pd.to_numeric(df["failures"], errors="coerce").dropna().astype(int).value_counts().sort_index()
@@ -166,7 +166,7 @@ else:
             st.markdown('</div>', unsafe_allow_html=True)
 
         with row3_col2:
-            st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+            # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
             st.markdown("#### 💪 Health Rating Distribution")
             if "health" in df.columns:
                 health_counts = pd.to_numeric(df["health"], errors="coerce").dropna().astype(int).value_counts().sort_index()
@@ -185,7 +185,7 @@ else:
             st.markdown('</div>', unsafe_allow_html=True)
 
         # ── Row 4: Study time vs outcome (full width) ────────────────────────
-        st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
         st.markdown("#### 📚 Study Time vs Predicted Outcome")
         if "studytime" in df.columns:
             study_df = df.copy()

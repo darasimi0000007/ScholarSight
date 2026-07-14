@@ -17,7 +17,7 @@ st.markdown("""
 col_form, col_result = st.columns([1.1, 0.9], gap="large")
 
 with col_form:
-    st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+    # st.markdown('<div class="ss-card">', unsafe_allow_html=True)
     st.markdown("#### 🎓 Student Academic Profile")
     st.markdown('<p style="color:#64748B;font-size:0.83rem;margin-bottom:1.2rem;">Fill in all fields. Hover labels for details.</p>', unsafe_allow_html=True)
 
@@ -68,7 +68,7 @@ with col_form:
 
     c1, c2, c3 = st.columns(3)
     with c1:
-        absences = st.number_input("School Absences", min_value = 0, max_value = 25, value = 3, step = 1)
+        absences = st.number_input("School Absences", min_value = 0, max_value = 70, value = 3, step = 1)
     with c2:
         freetime = st.selectbox("Free Time after School", [1, 2, 3, 4, 5], help = "Very Low(1), Low(2), Average(3), Free(4), Very Free(5)")
     with c3:
@@ -162,9 +162,9 @@ with col_result:
                 """, unsafe_allow_html=True)
 
                 # Show raw response
-                st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
-                with st.expander("📄 Full API Response"):
-                    st.json(res)
+                # st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
+                # with st.expander("📄 Full API Response"):
+                #     st.json(res)
 
                 # st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
                 # if st.button("🧠 View SHAP Analysis for this Student", width="stretch"):

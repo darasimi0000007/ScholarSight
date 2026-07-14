@@ -1,6 +1,11 @@
 import streamlit as st
 import requests
 from utils import inject_css, is_logged_in
+from dotenv import load_dotenv
+import os
+from typing import cast, Any
+
+load_dotenv()
 
 st.set_page_config(
     page_title="ScholarSight – Sign Up",
@@ -15,7 +20,8 @@ inject_css()
 if is_logged_in():
     st.switch_page("./pages/dashboard.py")
 
-API_BASE = "http://127.0.0.1:8000"
+ALLOWED_ORIGINS = os.getenv("BACKEND_URL", "http://localhost:8000").split(",")
+API_BASE = ALLOWED_ORIGINS[0]
 
 # ── Hero Section ──────────────────────────────────────────────────────────────
 st.markdown("""
@@ -46,15 +52,7 @@ st.markdown("""
     font-size: 0.95rem;
     letter-spacing: 0.03em;
 }
-.signup-box {
-    background: #1E293B;
-    border: 1px solid #334155;
-    border-radius: 16px;
-    padding: 2.2rem 2.5rem;
-    max-width: 500px;
-    margin: 0 auto;
-    box-shadow: 0 20px 60px #00000055;
-}
+
 .step-indicator {
     background: #1E293B;
     border-radius: 10px;
@@ -309,23 +307,14 @@ with col_main:
                         response = requests.post(
                             f"{API_BASE}/user/signup",
                             json=payload,
-                            headers=headers,
+                            headers=cast(Any, headers),
                             timeout=10
                         )
                         
                         if response.status_code == 201:
-                            st.markdown('<div class="success-message">✅ Account created successfully!</div>', unsafe_allow_html=True)
-                            st.markdown("""
-                            <div class="info-message" style="margin-top:1rem;">
-                                Your account has been created. You can now sign in with your email and password.
-                            </div>
-                            """, unsafe_allow_html=True)
-                            
-                            st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
-                            col_spacer, col_login = st.columns([1, 1])
-                            with col_login:
-                                if st.button("Go to Login →", key="go_to_login_btn", width="stretch"):
-                                    st.switch_page("app.py")
+                            st.session_state.signup_step = "success"   # ← persist the outcome, nothing renders here
+                            st.rerun()
+                        
                         else:
                             error_detail = response.json().get("detail", "Signup failed")
                             st.markdown(f'<div class="alert-error">❌ {error_detail}</div>', unsafe_allow_html=True)
@@ -333,6 +322,27 @@ with col_main:
                         st.markdown('<div class="alert-error">❌ Cannot reach the backend server. Is FastAPI running on port 8000?</div>', unsafe_allow_html=True)
                     except Exception as e:
                         st.markdown(f'<div class="alert-error">❌ Error: {str(e)}</div>', unsafe_allow_html=True)
+
+
+
+    # ── STEP 3: Success Message ───────────────────────────────────────────────
+    elif st.session_state.signup_step == "success":
+        st.markdown('<div class="success-message">✅ Account created successfully!</div>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class="info-message" style="margin-top:1rem;">
+            Your account has been created. You can now sign in with your email and password.
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown('<hr class="ss-divider">', unsafe_allow_html=True)
+        col_spacer, col_login = st.columns([1, 1])
+        with col_login:
+            if st.button("Go to Login →", key="signup_success_login_btn", width="stretch"):
+                st.switch_page("pages/login.py")
+
+
+
+
 
     st.markdown('</div>', unsafe_allow_html=True)
 

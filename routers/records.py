@@ -49,8 +49,8 @@ async def get_all_student_default(db: Session = Depends(get_db),
 
 # Get SHAP analysis chart 
 @router.get("/student/{student_id}/shap") 
-#@limiter.limit("10/minute")  # limiting the number of SHAP analysis requests to 10 per minute
-async def get_shap_analysis(student_id: str, db: Session = Depends(get_db), clf = Depends(get_model), preproc = Depends(get_preprocessor),
+@limiter.limit("10/minute")  # limiting the number of SHAP analysis requests to 10 per minute
+async def get_shap_analysis(request: Request, student_id: str, db: Session = Depends(get_db), clf = Depends(get_model), preproc = Depends(get_preprocessor),
                        current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
     blog = db.query(models.Blog).filter(models.Blog.student_id == student_id.upper()).first()
     if not blog:
@@ -138,10 +138,11 @@ async def get_shap_analysis(student_id: str, db: Session = Depends(get_db), clf 
 
 # wrapper endpoint for get SHAP analysis chart to maintain consistent URL structure
 @router.get("/{student_id}/shap")
-async def get_shap_analysis_default(student_id: str, db: Session = Depends(get_db), 
+@limiter.limit("10/minute")
+async def get_shap_analysis_default(request: Request, student_id: str, db: Session = Depends(get_db), 
                                    clf = Depends(get_model), preproc = Depends(get_preprocessor),
                                    current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
-    return await get_shap_analysis(student_id, db, clf, preproc, current_user)
+    return await get_shap_analysis(request, student_id, db, clf, preproc, current_user)
 
 
 
@@ -150,10 +151,10 @@ async def get_shap_analysis_default(student_id: str, db: Session = Depends(get_d
 
 # Get specific student by ID
 @router.get("/one_student/{student_id}")
-#@limiter.limit("10/minute")  # limiting the number of requests to 10 per minute
-async def get_student(student_id: str, response: Response, db: Session = Depends(get_db), current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
-    if current_user.role != "teacher":
-        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Only teachers can access students' records")
+@limiter.limit("10/minute")  # limiting the number of requests to 10 per minute
+async def get_student(request: Request, student_id: str, response: Response, db: Session = Depends(get_db), current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
+    # if current_user.role != "teacher":
+    #     raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Only teachers can access students' records")
     
 
     blogs = db.query(models.Blog).filter(models.Blog.student_id == student_id.upper()).first()
@@ -167,9 +168,9 @@ async def get_student(student_id: str, response: Response, db: Session = Depends
 
 #wrapper for get student by id endpoint to maintain consistent URL structure
 @router.get("/student/{student_id}")
-async def get_one_student_default(student_id: str, response: Response, db: Session = Depends(get_db),
+async def get_one_student_default(request: Request, student_id: str, response: Response, db: Session = Depends(get_db),
                                   current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
-    return await get_student(student_id, response, db, current_user)
+    return await get_student(request, student_id, response, db, current_user)
 
 
 
@@ -181,8 +182,8 @@ async def get_one_student_default(student_id: str, response: Response, db: Sessi
 
 #update a student's record
 @router.patch("/student/{student_id}/update", status_code = status.HTTP_200_OK)
-#@limiter.limit("10/minute")  # limiting the number of update requests to 10 per minute
-async def update_student(student_id: str, data: schema.StudentUpdate, db: Session = Depends(get_db), clf= Depends(get_model), current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
+@limiter.limit("10/minute")  # limiting the number of update requests to 10 per minute
+async def update_student(request: Request, student_id: str, data: schema.StudentUpdate, db: Session = Depends(get_db), clf= Depends(get_model), current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
     if current_user.role != "teacher":
         raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Only teachers can update students' records")
 
@@ -233,8 +234,8 @@ async def update_student(student_id: str, data: schema.StudentUpdate, db: Sessio
 
 # Delete student record
 @router.delete("/student/{student_id}", status_code=status.HTTP_200_OK)
-#@limiter.limit("10/minute")  # limiting the number of delete requests to 10 per minute
-async def delete_student(student_id: str, db: Session = Depends(get_db), current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
+@limiter.limit("10/minute")  # limiting the number of delete requests to 10 per minute
+async def delete_student(request: Request, student_id: str, db: Session = Depends(get_db), current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
     if current_user.role != "teacher":
         raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "Only teachers can access students' records")
     
@@ -257,9 +258,9 @@ async def delete_student(student_id: str, db: Session = Depends(get_db), current
 
 #wrapper for delete student record endpoint to maintain consistent URL structure
 @router.delete("/{student_id}")
-async def delete_student_default(student_id: str, db: Session = Depends(get_db), 
+async def delete_student_default(request: Request, student_id: str, db: Session = Depends(get_db), 
                                  current_user: schema.UserExtended = Depends(oauth2.get_current_user)):
-    return await delete_student(student_id, db, current_user)
+    return await delete_student(request, student_id, db, current_user)
 
 
 

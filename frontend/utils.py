@@ -2,9 +2,16 @@ import streamlit as st
 import requests
 import json
 from fastapi import HTTPException, status
+from dotenv import load_dotenv
+import os
+from streamlit_cookies_controller import CookieController
+import streamlit.components.v1 as components
+
+load_dotenv()
 
 
-API_BASE = "http://127.0.0.1:8000"
+ALLOWED_ORIGINS = os.getenv("BACKEND_URL", "http://localhost:8000").split(",")
+API_BASE = ALLOWED_ORIGINS[0]
 
 # ──────────────────────────────────────────
 #  Shared CSS injected on every page
@@ -265,7 +272,7 @@ def inject_css():
     .logo-text { line-height: 1.15; }
     .logo-text .app-name {
         font-size: 1.1rem; font-weight: 700; color: #F1F5F9;
-    }
+    }dotenv
     .logo-text .app-tagline {
         font-size: 0.72rem; color: #64748B; letter-spacing: 0.04em;
     }
@@ -320,6 +327,50 @@ def render_logo():
     </div>
     """, unsafe_allow_html=True)
 
+# ──────────────────────────────────────────
+#  Sorting Cookies and Keeping User Logged In After A Session
+# ──────────────────────────────────────────
+
+
+def _set_browser_cookie(name, value, days=1):
+    components.html(f"""
+        <script>
+        document.cookie = "{name}={value}; path=/; max-age={days*86400}; SameSite=Lax";
+        </script>
+    """, height=0, width=0)
+
+def _clear_browser_cookie(name):
+    components.html(f"""
+        <script>
+        document.cookie = "{name}=; path=/; max-age=0; SameSite=Lax";
+        </script>
+    """, height=0, width=0)
+
+def restore_session():
+    """Rehydrate st.session_state['user'] from browser cookies after a hard refresh."""
+    if is_logged_in():
+        return
+    cookies = st.context.cookies
+    token = cookies.get("ss_access_token")
+    institution_id = cookies.get("ss_institution_id")
+    email = cookies.get("ss_email")
+    if token and institution_id and email:
+        st.session_state["user"] = {
+            "email": email,
+            "institution_id": institution_id,
+            "access_token": token,
+            "token_type": "bearer",
+        }
+
+def persist_session(user: dict):
+    _set_browser_cookie("ss_access_token", user["access_token"])
+    _set_browser_cookie("ss_institution_id", user["institution_id"])
+    _set_browser_cookie("ss_email", user["email"])
+
+def clear_session_cookie():
+    _clear_browser_cookie("ss_access_token")
+    _clear_browser_cookie("ss_institution_id")
+    _clear_browser_cookie("ss_email")
 
 # ──────────────────────────────────────────
 #  Auth helpers (Token-based JWT system)
@@ -352,6 +403,7 @@ def get_access_token():
 
 def require_login():
     """Redirect to login if not authenticated."""
+    restore_session()
     if not is_logged_in():
         st.switch_page("app.py")
         st.stop()
@@ -539,6 +591,7 @@ def render_sidebar():
 
         st.markdown('<hr class="ss-divider" style="margin-top:auto;">', unsafe_allow_html=True)
         if st.button("Sign Out", key="signout_btn", width="stretch"):
+            clear_session_cookie()
             for k in list(st.session_state.keys()):
                 del st.session_state[k]
             st.switch_page("app.py")

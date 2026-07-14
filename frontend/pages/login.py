@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from utils import inject_css, is_logged_in
+from utils import inject_css, is_logged_in, restore_session, persist_session
 from dotenv import load_dotenv
 import os
 
@@ -18,6 +18,7 @@ st.set_page_config(
 inject_css()
 
 # Redirect if already logged in
+restore_session()
 if is_logged_in():
     st.switch_page("./pages/dashboard.py")
 
@@ -53,15 +54,7 @@ st.markdown("""
     font-size: 0.95rem;
     letter-spacing: 0.03em;
 }
-.login-box {
-    background: #1E293B;
-    border: 1px solid #334155;
-    border-radius: 16px;
-    padding: 2.2rem 2.5rem;
-    max-width: 420px;
-    margin: 0 auto;
-    box-shadow: 0 20px 60px #00000055;
-}
+
 .divider-line {
     height: 1px;
     background: linear-gradient(90deg, #334155 0%, #33415500 100%);
@@ -113,18 +106,18 @@ with col_main:
 
     st.markdown('<p style="color:#94A3B8;font-size:0.9rem;margin-bottom:1.5rem;font-weight:600;">Sign in to your account</p>', unsafe_allow_html=True)
 
-    # Institution ID field
-    st.markdown('<p class="form-label">🏫 Institution ID</p>', unsafe_allow_html=True)
-    institution_id = st.text_input(
-        label="Institution ID",
-        placeholder="STU001234 or TEA005678",
-        key="login_institution_id",
-        label_visibility="collapsed",
-        help="Your institution ID (starts with STU or TEA)"
-    )
+    # # Institution ID field
+    # st.markdown('<p class="form-label">Institution ID</p>', unsafe_allow_html=True)
+    # institution_id = st.text_input(
+    #     label="Institution ID",
+    #     placeholder="STU001234 or TEA005678",
+    #     key="login_institution_id",
+    #     label_visibility="collapsed",
+    #     help="Your institution ID (starts with STU or TEA)"
+    # )
 
     # Email login field
-    st.markdown('<p class="form-label">✉️ Email Address</p>', unsafe_allow_html=True)
+    st.markdown('<p class="form-label">Email Address</p>', unsafe_allow_html=True)
     email = st.text_input(
         label="Email",
         placeholder="your.email@institution.com",
@@ -134,7 +127,7 @@ with col_main:
     )
 
     # Password field
-    st.markdown('<p class="form-label">🔐 Password</p>', unsafe_allow_html=True)
+    st.markdown('<p class="form-label">Password</p>', unsafe_allow_html=True)
     password = st.text_input(
         label="Password",
         type="password",
@@ -144,7 +137,7 @@ with col_main:
     )
 
     if st.button("Sign In  →", width="stretch", key="login_btn"):
-        if not institution_id or not email or not password:
+        if not email or not password:
             st.markdown('<div class="alert-error">❌ Please fill in all fields.</div>', unsafe_allow_html=True)
         else:
             # Call backend login endpoint
@@ -168,10 +161,11 @@ with col_main:
                     # Store user session with token and institution_id
                     st.session_state["user"] = {
                         "email": email,
-                        "institution_id": institution_id,
+                        "institution_id": data.get("institution_id"),
                         "access_token": access_token,
                         "token_type": data.get("token_type", "bearer")
                     }
+                    persist_session(st.session_state["user"])
                     
                     st.markdown('<div class="alert-success">✅ Login successful! Redirecting to dashboard...</div>', unsafe_allow_html=True)
                     st.switch_page("./pages/dashboard.py")

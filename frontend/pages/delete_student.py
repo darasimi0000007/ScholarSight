@@ -44,7 +44,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── Step 1: ID lookup ─────────────────────────────────────────────────────────
-st.markdown('<div class="ss-card">', unsafe_allow_html=True)
+# st.markdown('<div class="ss-card">', unsafe_allow_html=True)
 st.markdown("#### 🔍 Find Student Record")
 
 prefill_id = st.session_state.pop("delete_student_id", "")
